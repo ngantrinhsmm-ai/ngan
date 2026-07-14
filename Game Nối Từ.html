@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nối Từ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@600;700&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --lacquer: #16130f;
+    --lacquer-2: #211b14;
+    --paper: #efe3c8;
+    --gold: #c9a227;
+    --gold-light: #e6c65c;
+    --red: #a5342a;
+    --red-light: #c94a3c;
+    --ink-line: rgba(201,162,39,0.25);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 15% 10%, rgba(201,162,39,0.08), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(165,52,42,0.10), transparent 45%),
+      var(--lacquer);
+    color:var(--paper);
+    font-family:'Be Vietnam Pro', sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:32px 16px 60px;
+  }
+  .app{
+    width:100%;
+    max-width:560px;
+  }
+  header{
+    text-align:center;
+    margin-bottom:28px;
+    position:relative;
+  }
+  header::before, header::after{
+    content:"";
+    display:block;
+    width:60px;
+    height:2px;
+    background:var(--gold);
+    margin:14px auto 0;
+    opacity:0.6;
+  }
+  h1{
+    font-family:'Noto Serif', serif;
+    font-weight:700;
+    font-size:2.6rem;
+    letter-spacing:0.12em;
+    margin:0;
+    background:linear-gradient(180deg, var(--gold-light), var(--gold));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .subtitle{
+    font-size:0.85rem;
+    color:rgba(239,227,200,0.55);
+    margin-top:8px;
+    letter-spacing:0.04em;
+  }
+  .panel{
+    background:var(--lacquer-2);
+    border:1px solid var(--ink-line);
+    border-radius:6px;
+    padding:20px;
+    margin-bottom:18px;
+  }
+  .status-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:14px;
+    font-size:0.85rem;
+    color:rgba(239,227,200,0.7);
+  }
+  .status-row strong{
+    color:var(--gold-light);
+    font-weight:600;
+  }
+  #chain{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    max-height:300px;
+    overflow-y:auto;
+    padding-right:4px;
+  }
+  #chain::-webkit-scrollbar{width:6px;}
+  #chain::-webkit-scrollbar-thumb{background:var(--ink-line); border-radius:3px;}
+  .tile{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:var(--lacquer);
+    border:1px solid var(--ink-line);
+    border-radius:4px;
+    padding:10px 14px;
+    font-size:1.05rem;
+    animation:slideIn 0.25s ease;
+  }
+  .tile.computer{border-color:rgba(165,52,42,0.4);}
+  .tile .tag{
+    font-size:0.65rem;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    padding:2px 6px;
+    border-radius:3px;
+    background:rgba(201,162,39,0.15);
+    color:var(--gold-light);
+    flex-shrink:0;
+  }
+  .tile.computer .tag{
+    background:rgba(165,52,42,0.18);
+    color:var(--red-light);
+  }
+  .tile .word span.hl{
+    color:var(--gold-light);
+    font-weight:600;
+  }
+  @keyframes slideIn{
+    from{opacity:0; transform:translateY(6px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+  .input-row{
+    display:flex;
+    gap:8px;
+    margin-top:16px;
+  }
+  #wordInput{
+    flex:1;
+    background:var(--lacquer);
+    border:1px solid var(--ink-line);
+    border-radius:4px;
+    padding:12px 14px;
+    color:var(--paper);
+    font-size:1rem;
+    font-family:inherit;
+    outline:none;
+    transition:border-color 0.2s;
+  }
+  #wordInput:focus{border-color:var(--gold);}
+  #wordInput::placeholder{color:rgba(239,227,200,0.35);}
+  button{
+    font-family:inherit;
+    cursor:pointer;
+    border:none;
+    border-radius:4px;
+    font-weight:600;
+    transition:transform 0.12s, opacity 0.12s;
+  }
+  button:active{transform:scale(0.97);}
+  #submitBtn{
+    background:var(--gold);
+    color:var(--lacquer);
+    padding:12px 20px;
+    font-size:0.95rem;
+  }
+  #submitBtn:disabled{opacity:0.35; cursor:not-allowed;}
+  .actions{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:12px;
+  }
+  #giveUpBtn{
+    background:none;
+    color:rgba(239,227,200,0.45);
+    font-size:0.8rem;
+    padding:6px 0;
+    text-decoration:underline;
+    text-underline-offset:3px;
+  }
+  #giveUpBtn:hover{color:var(--red-light);}
+  #message{
+    min-height:22px;
+    font-size:0.85rem;
+    margin-top:10px;
+    color:var(--red-light);
+  }
+  #message.ok{color:var(--gold-light);}
+  .overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(22,19,15,0.92);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:10;
+  }
+  .overlay.show{display:flex;}
+  .result-card{
+    background:var(--lacquer-2);
+    border:1px solid var(--gold);
+    border-radius:8px;
+    padding:36px 28px;
+    text-align:center;
+    max-width:360px;
+  }
+  .result-card h2{
+    font-family:'Noto Serif', serif;
+    font-size:1.8rem;
+    margin:0 0 8px;
+    color:var(--gold-light);
+  }
+  .result-card p{
+    color:rgba(239,227,200,0.7);
+    font-size:0.9rem;
+    margin:0 0 20px;
+  }
+  #restartBtn{
+    background:var(--gold);
+    color:var(--lacquer);
+    padding:12px 28px;
+    font-size:0.95rem;
+  }
+  .rules{
+    font-size:0.8rem;
+    color:rgba(239,227,200,0.5);
+    line-height:1.6;
+    text-align:center;
+    margin-top:20px;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <h1>NỐI TỪ</h1>
+    <div class="subtitle">Đấu với máy - nối chữ liên hoàn</div>
+  </header>
+
+  <div class="panel">
+    <div class="status-row">
+      <span>Số từ trong chuỗi: <strong id="scoreDisplay">0</strong></span>
+      <span id="turnDisplay">Đến lượt bạn</span>
+    </div>
+    <div id="chain"></div>
+
+    <div class="input-row">
+      <input type="text" id="wordInput" placeholder="Nhập từ 2 tiếng, ví dụ: sinh viên" autocomplete="off">
+      <button id="submitBtn">Nối</button>
+    </div>
+    <div class="actions">
+      <button id="giveUpBtn">Chịu thua</button>
+    </div>
+    <div id="message"></div>
+  </div>
+
+  <p class="rules">
+    Luật chơi: từ bạn nhập phải bắt đầu bằng tiếng cuối của từ trước đó, có trong từ điển của trò chơi, và chưa được dùng. Máy sẽ nối tiếp ngay sau bạn.
+  </p>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="result-card">
+    <h2 id="resultTitle">Kết thúc</h2>
+    <p id="resultDesc">Chuỗi dừng lại.</p>
+    <button id="restartBtn">Chơi lại</button>
+  </div>
+</div>
+
+<script>
+const DICTIONARY = [
+"học sinh","sinh viên","viên chức","chức năng","năng lực","lực sĩ","sĩ quan","quan tâm",
+"tâm hồn","hồn nhiên","nhiên liệu","liệu pháp","pháp luật","luật sư","sư phạm","phạm vi",
+"vi phạm","vi tính","tính toán","toán học","học tập","tập thể","thể thao","thao tác",
+"tác giả","giả thuyết","thuyết trình","trình bày","bày tỏ","tỏ tình","tình yêu","yêu thương",
+"thương hiệu","hiệu quả","quả bóng","bóng đá","đá banh","xe đạp","máy tính","tính tình",
+"tình cảm","cảm xúc","xúc động","động vật","vật nuôi","nuôi dưỡng","dưỡng sinh","sinh nhật",
+"nhật ký","ký ức","ức chế","chế biến","biến đổi","đổi mới","mới lạ","lạ lùng","lạ mắt",
+"mắt kính","kính trọng","trọng lượng","lượng mưa","mưa gió","gió mùa","mùa hè","hè phố",
+"phố phường","phường xã","xã hội","hội họp","họp mặt","mặt trời","trời đất","đất nước",
+"nước mắt","nước uống","uống rượu","rượu bia","rượu vang","vang danh","danh tiếng","tiếng nói",
+"nói chuyện","chuyện trò","trò chơi","chơi đùa","gia đình","đình làng","làng quê","quê hương",
+"hương vị","vị giác","giác ngộ","ngộ độc","độc hại","hại người","người dân","dân tộc",
+"dân chủ","chủ tịch","tịch thu","thu nhập","nhập khẩu","khẩu phần","phần trăm","trăm năm",
+"năm tháng","tháng ngày","ngày đêm","đêm khuya","con người","người lớn","lớn lên","lên lớp",
+"lớp học","học bổng","gia súc","súc vật","vật lý","lý thuyết","thuyết phục","phục vụ",
+"vụ mùa","mùa màng","con mèo","mèo con","cơm nước","nước chấm","chấm điểm","điểm danh",
+"danh sách","sách vở","vở kịch","kịch bản","bản đồ","đồ chơi","chơi game","game thủ",
+"thủ đô","đô thị","thị trường","trường học","học kỳ","kỳ thi","thi cử","cử nhân",
+"nhân viên","viên gạch","gạch men"
+];
+
+let usedWords = new Set();
+let chain = [];
+let requiredSyllable = null;
+let wrongAttempts = 0;
+const MAX_WRONG = 3;
+let gameOver = false;
+
+const chainEl = document.getElementById('chain');
+const scoreEl = document.getElementById('scoreDisplay');
+const turnEl = document.getElementById('turnDisplay');
+const inputEl = document.getElementById('wordInput');
+const submitBtn = document.getElementById('submitBtn');
+const giveUpBtn = document.getElementById('giveUpBtn');
+const messageEl = document.getElementById('message');
+const overlay = document.getElementById('overlay');
+const resultTitle = document.getElementById('resultTitle');
+const resultDesc = document.getElementById('resultDesc');
+const restartBtn = document.getElementById('restartBtn');
+
+function norm(s){
+  return s.trim().toLowerCase().replace(/\s+/g,' ');
+}
+
+function syllables(word){
+  const parts = norm(word).split(' ');
+  return { first: parts[0], last: parts[parts.length-1] };
+}
+
+function renderTile(word, who){
+  const { first, last } = syllables(word);
+  const parts = norm(word).split(' ');
+  let html = '';
+  parts.forEach((p, i) => {
+    const isHighlight = (requiredSyllable !== null) && (i === 0) && chain.length > 0 && chain[chain.length-1] === word;
+    html += p + (i < parts.length-1 ? ' ' : '');
+  });
+  const div = document.createElement('div');
+  div.className = 'tile' + (who === 'computer' ? ' computer' : '');
+  div.innerHTML = `<span class="tag">${who === 'computer' ? 'Máy' : 'Bạn'}</span><span class="word">${word}</span>`;
+  chainEl.appendChild(div);
+  chainEl.scrollTop = chainEl.scrollHeight;
+}
+
+function setMessage(text, ok){
+  messageEl.textContent = text;
+  messageEl.className = ok ? 'ok' : '';
+}
+
+function updateStatus(){
+  scoreEl.textContent = chain.length;
+}
+
+function startGame(){
+  usedWords = new Set();
+  chain = [];
+  wrongAttempts = 0;
+  gameOver = false;
+  chainEl.innerHTML = '';
+  overlay.classList.remove('show');
+  inputEl.disabled = false;
+  submitBtn.disabled = false;
+  inputEl.value = '';
+  setMessage('', false);
+
+  const starter = DICTIONARY[Math.floor(Math.random() * DICTIONARY.length)];
+  usedWords.add(starter);
+  chain.push(starter);
+  requiredSyllable = syllables(starter).last;
+  renderTile(starter, 'computer');
+  updateStatus();
+  turnEl.textContent = 'Đến lượt bạn';
+  inputEl.focus();
+}
+
+function endGame(playerWon, reason){
+  gameOver = true;
+  inputEl.disabled = true;
+  submitBtn.disabled = true;
+  resultTitle.textContent = playerWon ? 'Bạn thắng!' : 'Bạn thua!';
+  resultDesc.textContent = reason;
+  overlay.classList.add('show');
+}
+
+function computerMove(){
+  turnEl.textContent = 'Máy đang suy nghĩ...';
+  setTimeout(() => {
+    const candidates = DICTIONARY.filter(w => {
+      const { first } = syllables(w);
+      return first === requiredSyllable && !usedWords.has(w);
+    });
+    if(candidates.length === 0){
+      endGame(true, 'Máy chịu thua, không tìm được từ bắt đầu bằng "' + requiredSyllable + '".');
+      return;
+    }
+    const pick = candidates[Math.floor(Math.random() * candidates.length)];
+    usedWords.add(pick);
+    chain.push(pick);
+    requiredSyllable = syllables(pick).last;
+    renderTile(pick, 'computer');
+    updateStatus();
+    turnEl.textContent = 'Đến lượt bạn';
+    wrongAttempts = 0;
+    inputEl.focus();
+  }, 700);
+}
+
+function handleSubmit(){
+  if(gameOver) return;
+  const raw = inputEl.value;
+  const value = norm(raw);
+  if(!value){
+    setMessage('Bạn chưa nhập từ nào.', false);
+    return;
+  }
+  const parts = value.split(' ');
+  if(parts.length !== 2){
+    setMessage('Chỉ nhập từ có đúng 2 tiếng, ví dụ: sinh viên.', false);
+    registerWrong();
+    return;
+  }
+  if(parts[0] !== requiredSyllable){
+    setMessage('Từ phải bắt đầu bằng tiếng "' + requiredSyllable + '".', false);
+    registerWrong();
+    return;
+  }
+  if(!DICTIONARY.includes(value)){
+    setMessage('Từ này không có trong từ điển của trò chơi.', false);
+    registerWrong();
+    return;
+  }
+  if(usedWords.has(value)){
+    setMessage('Từ này đã được dùng rồi, chọn từ khác.', false);
+    registerWrong();
+    return;
+  }
+
+  usedWords.add(value);
+  chain.push(value);
+  requiredSyllable = syllables(value).last;
+  renderTile(value, 'player');
+  updateStatus();
+  setMessage('Hợp lệ!', true);
+  inputEl.value = '';
+  wrongAttempts = 0;
+  computerMove();
+}
+
+function registerWrong(){
+  wrongAttempts++;
+  if(wrongAttempts >= MAX_WRONG){
+    endGame(false, 'Bạn đã nhập sai ' + MAX_WRONG + ' lần liên tiếp.');
+  }
+}
+
+submitBtn.addEventListener('click', handleSubmit);
+inputEl.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter') handleSubmit();
+});
+giveUpBtn.addEventListener('click', () => {
+  if(!gameOver) endGame(false, 'Bạn đã chọn chịu thua.');
+});
+restartBtn.addEventListener('click', startGame);
+
+startGame();
+</script>
+</body>
+</html>
